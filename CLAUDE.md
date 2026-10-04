@@ -6,8 +6,14 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
 
 ## Vad appen gör
 
-- Fullskärmsritapp med 6 färger (svart, röd, gul, blå, grön, lila), fast
+- Fullskärmsritapp med 6 färger (mörkgrå, röd, gul, blå, grön, lila), fast
   penselbredd (16 px på "papperet") och rundad pensel.
+- **Lugn stil som syskonen** Poppa och Färga: färgerna är samma mjuka toner
+  som Poppas ballonger, bara lite djupare så strecken syns på vitt papper
+  (rena pasteller blir för bleka som streck). Panelen är ljusblå
+  (`#dcecf8`) med vita knappar och grå text som i Färga; SÄKER? är mjukt
+  rosa. Färgerna står bara i `data-color` i `index.html` — `app.js` färgar
+  rutorna och tar startfärgen från rutan med klassen `selected`.
 - **ÅNGRA** — ångra upp till 10 streck (`MAX_UNDO`). Håll in knappen i 1 s
   (`HOLD_MS`) för att aktivera; ett kort tryck gör inget.
 - **RENSA** — tvåstegs bekräftelse med hållning: första hållningen (1 s)
@@ -28,8 +34,12 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
 
 ## Hosting / driftsättning
 
-- Hostas via **GitHub Pages**. Repo: `https://github.com/isak-wallo/Kludd`
-  (branch `main`). Public URL: `https://isak-wallo.github.io/Kludd/`.
+- Hostas via **GitHub Pages**. Repo: `https://github.com/isak-wallo/Kludda`
+  (branch `main`). Public URL: `https://isak-wallo.github.io/Kludda/`.
+  (Repot hette tidigare Kludd — den gamla Pages-adressen `/Kludd/` ger 404
+  och omdirigeras inte. En platta som installerat appen från den gamla
+  adressen kör sin cachade version för evigt och får aldrig uppdateringar;
+  installera om från den nya adressen.)
 - Installeras på plattan genom att öppna URL:en i Chrome på Android och
   "Lägg till på hemskärm" — då körs den i `display-mode: standalone`.
 - **Inget byggsteg** — filerna servas direkt som de är. Driftsätt = commit +
@@ -62,7 +72,7 @@ gäller: commit-meddelanden på svenska, signera med
 | `style.css` | Layout via flex/grid, safe-area, knapp-panelens rutnät i både porträtt och landskap. |
 | `sw.js` | Service worker — cache-first med tyst bakgrundsuppdatering (stale-while-revalidate). Bumpa `VERSION` vid varje deploy. |
 | `manifest.json` | PWA-manifest (`standalone`, `landscape`, ikoner). |
-| `icon-192.png`, `icon-512.png` | App-ikoner. |
+| `icon-192.png`, `icon-512.png` | App-ikoner (vågiga streck i appens färger på ljusblå himmel). |
 
 ## Arkitektur / viktiga detaljer i `app.js`
 
@@ -72,6 +82,12 @@ gäller: commit-meddelanden på svenska, signera med
 - **Landskapsrotation:** om `viewCanvas` är bredare än hög roteras papperet
   90° vid rendering med `setTransform` (och koordinatmappningen speglar det).
   Det gör att knappsatsens färgpositioner i CSS matchar ritytans rotation.
+- **Mjuka streck:** punkterna ritas som `quadraticCurveTo` genom
+  mittpunkterna mellan touch-punkterna (`lastX/lastY` = där strecket slutar,
+  en mittpunkt; `ctrlX/ctrlY` = senaste touch-punkten). Gör att snabba drag
+  med glesa punkter på den gamla plattan blir runda i stället för kantiga.
+  Sista halvbiten fram till sista punkten ritas när strecket avslutas
+  (`finishStrokeTail`, från `endStroke` och när ett nytt finger tar över).
 - **Batchad rendering:** inkommande touch/mus-punkter buffras i
   `pendingPoints` och ritas + renderas en gång per `requestAnimationFrame`
   (`scheduleRender` / `flushPendingStrokes`). Det är en prestandaoptimering
@@ -97,7 +113,9 @@ gäller: commit-meddelanden på svenska, signera med
   en progress-animasjon (`hold-fill`) som fylls uppåt över 1 s så barnet
   ser att man ska hålla kvar. Animationens längd synkas med `HOLD_MS` via
   CSS-variabeln `--hold-ms`. Hållningen avbryts om fingret glider utanför
-  knappen (touchmove-bounds-check, motsvarar `mouseleave` för mus), och ett
+  knappen (touchmove-bounds-check, motsvarar `mouseleave` för mus). Bara
+  det hållande fingret (`holdTouchId`) kan avbryta — ett annat finger som
+  lyfts från duken avbryter inte hållningen. Ett
   pågående ritstreck avslutas snyggt innan ångra/rensa körs (multitouch).
   RENSA behåller sin tvåstegsbekräftelse: första hållningen visar SÄKER?,
   andra hållningen tömmer duken.

@@ -19,10 +19,22 @@ document.addEventListener('DOMContentLoaded', () => {
     pCtx.fillStyle = '#ffffff';
     pCtx.fillRect(0, 0, paper.width, paper.height);
 
+    // Färgrutorna får sin färg från data-color (enda stället färgerna står).
+    colorBoxes.forEach(box => { box.style.backgroundColor = box.dataset.color; });
+
     let isDrawing = false;
+    // Strecket ritas som mjuka kurvor genom mittpunkterna mellan
+    // touch-punkterna (i stället för raka bitar, som blir kantiga när den
+    // gamla plattan ger glesa punkter vid snabba drag). lastX/lastY är där
+    // det ritade strecket slutar just nu (en mittpunkt), ctrlX/ctrlY den
+    // senaste touch-punkten, som blir kontrollpunkt för nästa kurvbit.
+    // Sista halvbiten fram till ctrlX/ctrlY ritas när strecket avslutas
+    // (finishStrokeTail).
     let lastX = 0;
     let lastY = 0;
-    let currentColor = '#000000';
+    let ctrlX = 0;
+    let ctrlY = 0;
+    let currentColor = document.querySelector('.color-box.selected').dataset.color;
     const lineWidth = 16;
 
     pCtx.lineCap = 'round';
@@ -189,12 +201,32 @@ document.addEventListener('DOMContentLoaded', () => {
         pCtx.beginPath();
         pCtx.moveTo(lastX, lastY);
         for (let i = 0; i < len; i += 2) {
-            pCtx.lineTo(pendingPoints[i], pendingPoints[i + 1]);
+            const x = pendingPoints[i];
+            const y = pendingPoints[i + 1];
+            const mx = (ctrlX + x) / 2;
+            const my = (ctrlY + y) / 2;
+            pCtx.quadraticCurveTo(ctrlX, ctrlY, mx, my);
+            ctrlX = x;
+            ctrlY = y;
+            lastX = mx;
+            lastY = my;
         }
         pCtx.stroke();
-        lastX = pendingPoints[len - 2];
-        lastY = pendingPoints[len - 1];
         pendingPoints.length = 0;
+    }
+
+    // Ritar sista halvbiten av strecket (från senaste mittpunkten fram till
+    // sista touch-punkten). Anropas när ett ritat streck avslutas.
+    function finishStrokeTail() {
+        flushPendingStrokes();
+        if (lastX === ctrlX && lastY === ctrlY) return;
+        pCtx.beginPath();
+        pCtx.moveTo(lastX, lastY);
+        pCtx.lineTo(ctrlX, ctrlY);
+        pCtx.stroke();
+        lastX = ctrlX;
+        lastY = ctrlY;
+        scheduleRender();
     }
 
     function scheduleRender() {
@@ -273,14 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hadOther) {
             if (strokeCommitted && strokeExtent < REST_CANCEL_PX * REST_CANCEL_PX) {
                 cancelActiveStroke();   // förra fingret vilade -> radera kort spår
-            } else {
-                flushPendingStrokes();  // förra fingret ritade på riktigt -> spara
+            } else if (strokeCommitted) {
+                finishStrokeTail();     // förra fingret ritade på riktigt -> spara
             }
-        } else {
-            flushPendingStrokes();
         }
-        lastX = coords.x;
-        lastY = coords.y;
+        lastX = ctrlX = coords.x;
+        lastY = ctrlY = coords.y;
         strokeStartX = coords.x;
         strokeStartY = coords.y;
         strokeStartClientX = clientX;
@@ -315,8 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ritar en prick vid startpunkten; ett vilande finger i multitouch ritar
     // ingenting (strokeHadOther true).
     function endStroke() {
-        flushPendingStrokes();
-        if (!strokeCommitted && !strokeHadOther) {
+        if (strokeCommitted) finishStrokeTail();
+        else if (!strokeHadOther) {
             ensureStrokeUndo();
             pCtx.beginPath();
             pCtx.fillStyle = currentColor;
@@ -450,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Äldre iPads (före iPadOS 16.4) har bara webkit-prefixet.
             document.documentElement.webkitRequestFullscreen();
         }
-        document.getElementById('start-overlay').style.display = 'none';
+        startOverlay.style.display = 'none';
         setTimeout(applyLayout, 100);
     }
 
@@ -487,6 +517,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = (target === 'undo') ? undoBtn : clearBtn;
         if (btn.disabled) return;
         startHold(target);
+        undoBtn.classList.remove('holding');  // ev. annan knapps hållning
+        clearBtn.classList.remove('holding'); // ersätts av den nya
         btn.classList.add('holding');
     }
     function holdEnd() {
@@ -495,22 +527,26 @@ document.addEventListener('DOMContentLoaded', () => {
         clearBtn.classList.remove('holding');
     }
 
-    undoBtn.addEventListener('touchstart', function(e) {
+    // Fingret som håller knappen. Bara DET fingret kan avbryta hållningen —
+    // annars skulle ett annat finger som lyfts (t.ex. handen som ritar eller
+    // vilar på duken) avbryta ÅNGRA/RENSA mitt i hållningen.
+    let holdTouchId = null;
+
+    function holdTouchStart(target, e) {
         e.stopPropagation();
-        holdStart('undo');
+        holdTouchId = e.changedTouches[0].identifier;
+        holdStart(target);
         e.preventDefault();
-    }, { passive: false });
-    clearBtn.addEventListener('touchstart', function(e) {
-        e.stopPropagation();
-        holdStart('clear');
-        e.preventDefault();
-    }, { passive: false });
+    }
+    undoBtn.addEventListener('touchstart', e => holdTouchStart('undo', e), { passive: false });
+    clearBtn.addEventListener('touchstart', e => holdTouchStart('clear', e), { passive: false });
 
     // Touch-hållning avbryts om fingret glider utanför knappen (samma som
     // mouseleave för mus). Touch-event riktas alltid till elementet där
     // touchen startade, så touchmove på knappen räcker för en bounds-check.
     function holdTouchMove(e) {
-        const t = e.changedTouches[0];
+        const t = findTouch(e.changedTouches, holdTouchId);
+        if (!t) return;
         const r = this.getBoundingClientRect();
         if (t.clientX < r.left || t.clientX > r.right ||
             t.clientY < r.top || t.clientY > r.bottom) {
@@ -520,9 +556,15 @@ document.addEventListener('DOMContentLoaded', () => {
     undoBtn.addEventListener('touchmove', holdTouchMove, { passive: true });
     clearBtn.addEventListener('touchmove', holdTouchMove, { passive: true });
 
-    // touchend/cancel på hela fönstret stänger hållningen (fingret lyfts)
-    window.addEventListener('touchend', holdEnd, { passive: true });
-    window.addEventListener('touchcancel', holdEnd, { passive: true });
+    // touchend/cancel på hela fönstret stänger hållningen när det hållande
+    // fingret lyfts
+    function holdTouchEnd(e) {
+        if (holdTouchId === null || !findTouch(e.changedTouches, holdTouchId)) return;
+        holdTouchId = null;
+        holdEnd();
+    }
+    window.addEventListener('touchend', holdTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', holdTouchEnd, { passive: true });
 
     // Mus: mousedown startar hållningen (bara vänster knapp — höger- och
     // mittklick ignoreras), mouseup/mouseleave avslutar

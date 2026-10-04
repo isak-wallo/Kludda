@@ -3,14 +3,14 @@
 En enkel fullskärms-ritapp för barn, byggd som en PWA och avsedd att
 installeras på en gammal Android-platta och användas offline.
 
-Rita med 6 färger, ångra upp till 10 streck och rensa duken. Appen låser
-orienteringen till porträtt, går i helskärm och låser fast layouten så att
+Rita med 6 mjuka färger (samma lugna toner som syskonappen Poppa), ångra upp till 10 streck och rensa duken. Appen låser
+orienteringen till landskap, går i helskärm och låser fast layouten så att
 systemfälten inte stör ritytan. Multi-touch hanteras så att barnet kan vila
 en hand på skärmen medan det ritar med den andra.
 
 ## Installera på en Android-platta
 
-1. Öppna appens URL i Chrome på Android: <https://isak-wallo.github.io/Kludd/>
+1. Öppna appens URL i Chrome på Android: <https://isak-wallo.github.io/Kludda/>
 2. Välj **Lägg till på hemskärm** (Chrome-meny → "Lägg till på hemskärm").
 3. Starta från hemskärmen — då körs appen i standalone-läge och fungerar
    offline tack vare service workern.
@@ -29,7 +29,7 @@ eller servea mappen med valfri statisk server (t.ex.
 | `app.js` | All app-logik: ritande, ångra, rensa, layout, fullscreen, SW-registrering. |
 | `style.css` | Layout, safe-area, knapp-panel i porträtt och landskap. |
 | `sw.js` | Service worker för offline-caching. |
-| `manifest.json` | PWA-manifest (`standalone`, `portrait`, ikoner). |
+| `manifest.json` | PWA-manifest (`standalone`, `landscape`, ikoner). |
 | `icon-192.png`, `icon-512.png` | App-ikoner. |
 
 ## Uppdatera appen (viktigt)

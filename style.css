@@ -51,12 +51,13 @@ body {
     font-family: sans-serif;
     font-weight: bold;
     color: white;
-    background-color: #34c759;
+    background-color: #7fb7e6;
     border: none;
     border-radius: 20px;
     cursor: pointer;
     box-shadow: 0 10px 25px rgba(0,0,0,0.6);
     transition: transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
 }
 #start-btn:active {
     transform: scale(0.95);
@@ -98,9 +99,9 @@ body {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    background-color: #1c1c1e;
-    padding: 6px;
-    gap: 6px;
+    background-color: #dcecf8;   /* samma ljusblå som Poppas himmel / Färgas panel */
+    padding: 10px;
+    gap: 10px;
 }
 @media (orientation: landscape) {
     #button-container {
@@ -137,43 +138,40 @@ body {
     width: 100%;
     height: 100%;
     cursor: pointer;
-    border-radius: 10px;
-    /* Ovalda färger tonas ner en aning (behåller färgen, blir bara
-       mörkare) så att den aktiva färgen syns tydligt. Kanten gör
-       att även svart syns mot panelen. */
-    filter: brightness(0.6);
-    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 18px;
+    /* Ovalda färger är lite mindre och utan ram; den valda växer och får
+       en vit ram med mjuk skugga så att den syns tydligt mot den ljusa
+       panelen. Bakgrundsfärgen sätts av app.js från data-color. */
+    border: 5px solid transparent;
+    transform: scale(0.86);
     -webkit-tap-highlight-color: transparent;
-    transition: transform 0.12s ease, box-shadow 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 .color-box.selected {
-    filter: brightness(1);
     border-color: #ffffff;
-    transform: scale(1.08);
-    box-shadow: 0 0 14px rgba(255,255,255,0.6);
+    transform: scale(1);
+    box-shadow: 0 3px 10px rgba(80, 110, 140, 0.35);
     z-index: 2;
 }
-/* Svart ruta: ljusare kant så den syns mot den mörka panelen */
-.color-box.c-svart:not(.selected) {
-    border-color: rgba(255,255,255,0.35);
-}
 .color-box:active {
-    transform: scale(0.9);
+    transform: scale(0.8);
 }
 
-/* Systemknappen (ÅNGRA / RENSA) */
+/* Systemknapparna (ÅNGRA / RENSA) */
 .sys-btn {
     width: 100%;
     height: 100%;
-    color: white;
+    color: #5b6b7b;
+    background-color: #f7fbfe;
     border: none;
-    border-radius: 10px;
+    border-radius: 18px;
+    box-shadow: 0 2px 6px rgba(80, 110, 140, 0.18);
     font-family: sans-serif;
     font-weight: bold;
     font-size: clamp(13px, 3.5vw, 26px);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    transition: background-color 0.2s, transform 0.1s;
+    transition: background-color 0.3s, transform 0.15s, opacity 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -181,7 +179,7 @@ body {
     overflow: hidden;
 }
 .sys-btn:active:not(:disabled) {
-    transform: scale(0.9);
+    transform: scale(0.94);
 }
 @media (orientation: landscape) {
     .sys-btn {
@@ -201,7 +199,7 @@ body {
     bottom: 0;
     width: 100%;
     height: 0;
-    background-color: rgba(255, 255, 255, 0.35);
+    background-color: rgba(120, 160, 200, 0.3);
     animation: hold-fill var(--hold-ms, 1s) linear forwards;
     pointer-events: none;
 }
@@ -210,11 +208,10 @@ body {
     to   { height: 100%; }
 }
 
-#undo-btn { background-color: #3a3a3c; }
-#undo-btn:disabled { opacity: 0.4; cursor: default; }
-#clear-btn { background-color: #3a3a3c; }
+#undo-btn:disabled { opacity: 0.45; cursor: default; }
 #clear-btn.confirm {
-    background-color: #ff3b30;
+    background-color: #f2b8b0;
+    color: #ffffff;
     animation: pulse-confirm 0.3s ease;
 }
 @keyframes pulse-confirm {
