@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let holdTimer = null;
     let holdTarget = null;
     // Ett för kort tryck visar en stund (TIPS_MS) att man ska hålla inne.
-    const TIPS_MS = 2000;
+    const TIPS_MS = 5000;
     let tipsTimer = null;
 
     function startHold(target) {

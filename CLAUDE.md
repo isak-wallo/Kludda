@@ -17,7 +17,7 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
 - **ÅNGRA** — ångra upp till 10 streck (`MAX_UNDO`). Håll in knappen i 1 s
   (`HOLD_MS`) för att aktivera; ett kort tryck gör inget.
 - Ett för kort tryck på ÅNGRA/RENSA visar "HÅLL INNE FÖR ATT ÅNGRA/RENSA" i
-  knappen i 2 s (`TIPS_MS`, `visaHallTips`, CSS-klassen `.tips`).
+  knappen i 5 s (`TIPS_MS`, `visaHallTips`, CSS-klassen `.tips`).
 - **Teckningen sparas** som PNG i localStorage (`kludda-teckning`) 1,5 s efter
   varje ändring (`sparaSnart`, med `toBlob` så strecken inte hackar) och direkt
   när appen döljs (`sparaNu`), och läses in vid start (`lasIn`). Den finns kvar
