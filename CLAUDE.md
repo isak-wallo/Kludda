@@ -44,6 +44,10 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
   "Lägg till på hemskärm" — då körs den i `display-mode: standalone`.
 - **Inget byggsteg** — filerna servas direkt som de är. Driftsätt = commit +
   push till `main`.
+- **Även på https://kludda.keiws.com** (Cloudflare, `wrangler.jsonc`). Den
+  byts bara när Isak ber om det: `python verktyg/slapp.py --skarpt` publicerar
+  appens filer (ASSETS i `sw.js`) från `origin/main` med wrangler och taggar
+  committen `slapp-N`. `python verktyg/slapp.py` visar vad som är släppt.
 
 ### VIKTIGT vid uppdatering: bumpa SW-versionen
 I `sw.js` finns `const VERSION = 'vNN'` och `CACHE = 'rita-' + VERSION`.
@@ -72,6 +76,7 @@ gäller: commit-meddelanden på svenska, signera med
 | `style.css` | Layout via flex/grid, safe-area, knapp-panelens rutnät i både porträtt och landskap. |
 | `sw.js` | Service worker — cache-first med tyst bakgrundsuppdatering (stale-while-revalidate). Bumpa `VERSION` vid varje deploy. |
 | `manifest.json` | PWA-manifest (`standalone`, `landscape`, ikoner). |
+| `wrangler.jsonc`, `verktyg/slapp.py` | Publiceringen till kludda.keiws.com (se Hosting). |
 | `icon-192.png`, `icon-512.png` | App-ikoner (vågiga streck i appens färger på ljusblå himmel). |
 
 ## Arkitektur / viktiga detaljer i `app.js`

@@ -26,3 +26,7 @@ desktop.ini
 # Övrigt tillfälligt
 *.tmp
 *.log
+# Publiceringen (verktyg/slapp.py)
+webb/
+.wrangler/
+__pycache__/
