@@ -186,6 +186,19 @@ body {
         font-size: clamp(13px, 3.2vh, 26px);
     }
 }
+/* Tipset efter ett för kort tryck ("HÅLL INNE FÖR ATT ÅNGRA"): mindre text
+   på flera rader. */
+.sys-btn.tips {
+    font-size: clamp(10px, 2.2vw, 17px);
+    line-height: 1.2;
+    text-align: center;
+    padding: 0 6px;
+}
+@media (orientation: landscape) {
+    .sys-btn.tips {
+        font-size: clamp(10px, 2.1vh, 17px);
+    }
+}
 
 /* Håll-in-feedback: en rad växer uppifrån/nedifrån och fylls på medan
    fingret hålls. När den fyllt knappen aktiveras funktionen. Längden

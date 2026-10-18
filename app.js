@@ -58,10 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // av .sys-btn.holding i style.css).
     document.documentElement.style.setProperty('--hold-ms', HOLD_MS + 'ms');
     let holdTimer = null;
+    let holdTarget = null;
+    // Ett för kort tryck visar en stund (TIPS_MS) att man ska hålla inne.
+    const TIPS_MS = 2000;
+    let tipsTimer = null;
 
     function startHold(target) {
         if (holdTimer) clearTimeout(holdTimer);
+        holdTarget = target;
         holdTimer = setTimeout(() => {
+            holdTimer = null;
             const btn = target === 'undo' ? undoBtn : clearBtn;
             btn.classList.remove('holding');
             // Avsluta ett pågående streck först — annars blandas ångra/rensa
@@ -72,8 +78,98 @@ document.addEventListener('DOMContentLoaded', () => {
         }, HOLD_MS);
     }
 
-    function endHold() {
-        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    // slappt = fingret (musknappen) släpptes på knappen; släpps den innan
+    // HOLD_MS gått visas tipset. Glider fingret av knappen visas inget.
+    function endHold(slappt) {
+        if (holdTimer) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+            if (slappt) visaHallTips(holdTarget);
+        }
+    }
+
+    function knappText(btn) {
+        return btn === undoBtn ? 'ÅNGRA' : (clearState === 1 ? 'SÄKER?' : 'RENSA');
+    }
+
+    function visaHallTips(target) {
+        slackTips();
+        const btn = target === 'undo' ? undoBtn : clearBtn;
+        btn.textContent = target === 'undo' ? 'HÅLL INNE FÖR ATT ÅNGRA' : 'HÅLL INNE FÖR ATT RENSA';
+        btn.classList.add('tips');
+        tipsTimer = setTimeout(slackTips, TIPS_MS);
+    }
+
+    function slackTips() {
+        if (tipsTimer) { clearTimeout(tipsTimer); tipsTimer = null; }
+        [undoBtn, clearBtn].forEach(btn => {
+            if (btn.classList.contains('tips')) {
+                btn.classList.remove('tips');
+                btn.textContent = knappText(btn);
+            }
+        });
+    }
+
+    // --- Teckningen sparas i plattan ---
+    // Papperet sparas som PNG i localStorage en stund efter varje ändring
+    // (SPARA_EFTER_MS) och direkt när appen döljs, och läses in vid start.
+    // Så finns teckningen kvar om Android stänger appen eller en ny version
+    // laddas. Bara RENSA tömmer den.
+    const SPARA_NYCKEL = 'kludda-teckning';
+    const SPARA_EFTER_MS = 1500;
+    let sparaTimer = null;
+    let sparNr = 0;          // en äldre sparning som blir klar sent skriver inte över en nyare
+    let inlast = false;      // spara inte förrän den sparade teckningen lästs in
+
+    function sparaData(data) {
+        try { localStorage.setItem(SPARA_NYCKEL, data); } catch (e) { /* fullt eller avstängt */ }
+    }
+
+    // Direkt (när appen döljs eller laddas om).
+    function sparaNu() {
+        if (!inlast) return;
+        if (sparaTimer) { clearTimeout(sparaTimer); sparaTimer = null; }
+        sparNr++;
+        sparaData(paper.toDataURL('image/png'));
+    }
+
+    // En stund efter en ändring. toBlob packar bilden vid sidan av, så
+    // nästa streck inte hackar på den gamla plattan.
+    function sparaSnart() {
+        if (sparaTimer) clearTimeout(sparaTimer);
+        sparaTimer = setTimeout(() => {
+            sparaTimer = null;
+            if (!inlast) return;
+            const nr = ++sparNr;
+            paper.toBlob(blob => {
+                if (!blob || nr !== sparNr) return;
+                const fr = new FileReader();
+                fr.onload = () => { if (nr === sparNr) sparaData(fr.result); };
+                fr.readAsDataURL(blob);
+            }, 'image/png');
+        }, SPARA_EFTER_MS);
+    }
+
+    function lasIn() {
+        let data = null;
+        try { data = localStorage.getItem(SPARA_NYCKEL); } catch (e) { /* avstängt */ }
+        if (!data) { inlast = true; return; }
+        const img = new Image();
+        img.onload = () => { pCtx.drawImage(img, 0, 0); render(); inlast = true; };
+        img.onerror = () => { inlast = true; };
+        img.src = data;
+    }
+
+    // En ny version (service workern längst ner) laddas inte mitt i
+    // ritandet utan när appen döljs eller startskärmen visas, och
+    // teckningen sparas först.
+    let nyVersion = false;
+
+    function laddaOmOmNy() {
+        if (!nyVersion) return;
+        flushPendingStrokes();
+        sparaNu();
+        window.location.reload();
     }
 
     function resizeCanvas() {
@@ -294,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pCtx.putImageData(img, 0, 0);
             render();
             updateUndoState();
+            sparaSnart();
         }
         strokeUndoPushed = false;
     }
@@ -355,6 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
             render();
         }
         isDrawing = false;
+        sparaSnart();
     }
 
     // --- Mus (för test i webbläsare på dator) ---
@@ -426,6 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pCtx.fillRect(0, 0, paper.width, paper.height);
             render();
             resetClearButton();
+            sparaSnart();
         }
     }
 
@@ -437,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (clearBtn) {
             clearBtn.textContent = 'RENSA';
-            clearBtn.classList.remove('confirm');
+            clearBtn.classList.remove('confirm', 'tips');
         }
     }
 
@@ -456,6 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
         resetClearButton();
         updateUndoState();
+        sparaSnart();
     }
 
     function updateUndoState() {
@@ -490,6 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showStartOverlay() {
         startOverlay.style.display = 'flex';
         resetClearButton();
+        laddaOmOmNy();
     }
 
     // --- Händelsebindningar (tidigare inline i HTML) ---
@@ -516,13 +617,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function holdStart(target) {
         const btn = (target === 'undo') ? undoBtn : clearBtn;
         if (btn.disabled) return;
+        slackTips();
         startHold(target);
         undoBtn.classList.remove('holding');  // ev. annan knapps hållning
         clearBtn.classList.remove('holding'); // ersätts av den nya
         btn.classList.add('holding');
     }
-    function holdEnd() {
-        endHold();
+    function holdEnd(slappt) {
+        endHold(slappt);
         undoBtn.classList.remove('holding');
         clearBtn.classList.remove('holding');
     }
@@ -561,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function holdTouchEnd(e) {
         if (holdTouchId === null || !findTouch(e.changedTouches, holdTouchId)) return;
         holdTouchId = null;
-        holdEnd();
+        holdEnd(true);
     }
     window.addEventListener('touchend', holdTouchEnd, { passive: true });
     window.addEventListener('touchcancel', holdTouchEnd, { passive: true });
@@ -578,9 +680,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         holdStart('clear');
     });
-    window.addEventListener('mouseup', holdEnd);
-    undoBtn.addEventListener('mouseleave', holdEnd);
-    clearBtn.addEventListener('mouseleave', holdEnd);
+    window.addEventListener('mouseup', () => holdEnd(true));
+    undoBtn.addEventListener('mouseleave', () => holdEnd(false));
+    clearBtn.addEventListener('mouseleave', () => holdEnd(false));
 
     // --- Back-knapp: håll användaren kvar i appen ---
     // Bakåt får aldrig lämna sidan — i pinnat läge strandar den installerade
@@ -700,7 +802,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', debouncedLayout);
     window.addEventListener('orientationchange', debouncedLayout);
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) resetClearButton();
+        if (!document.hidden) return;
+        resetClearButton();
+        flushPendingStrokes();
+        sparaNu();
+        laddaOmOmNy();
     });
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', debouncedLayout);
@@ -709,16 +815,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     applyLayout();
     setTimeout(applyLayout, 50);
+    lasIn();
 
-    // Registrera service worker
+    // Service worker. Webbläsaren letar själv efter en ny version bara när
+    // appen startas, så den letar också när man kommer tillbaka till appen
+    // och var UPPDATERA_VAR medan den är öppen (ny version: laddaOmOmNy).
+    const UPPDATERA_VAR = 10 * 60 * 1000;
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(reg => {
+            const leta = () => reg.update().catch(() => {});
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') leta();
+            });
+            setInterval(leta, UPPDATERA_VAR);
             reg.addEventListener('updatefound', () => {
                 const nw = reg.installing;
                 if (!nw) return;
                 nw.addEventListener('statechange', () => {
                     if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-                        window.location.reload();
+                        nyVersion = true;
+                        if (document.hidden || startOverlay.style.display !== 'none') laddaOmOmNy();
                     }
                 });
             });

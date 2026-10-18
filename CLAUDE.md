@@ -16,6 +16,12 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
   rutorna och tar startfärgen från rutan med klassen `selected`.
 - **ÅNGRA** — ångra upp till 10 streck (`MAX_UNDO`). Håll in knappen i 1 s
   (`HOLD_MS`) för att aktivera; ett kort tryck gör inget.
+- Ett för kort tryck på ÅNGRA/RENSA visar "HÅLL INNE FÖR ATT ÅNGRA/RENSA" i
+  knappen i 2 s (`TIPS_MS`, `visaHallTips`, CSS-klassen `.tips`).
+- **Teckningen sparas** som PNG i localStorage (`kludda-teckning`) 1,5 s efter
+  varje ändring (`sparaSnart`, med `toBlob` så strecken inte hackar) och direkt
+  när appen döljs (`sparaNu`), och läses in vid start (`lasIn`). Den finns kvar
+  när Android stänger appen eller en ny version laddas; bara RENSA tömmer den.
 - **RENSA** — tvåstegs bekräftelse med hållning: första hållningen (1 s)
   visar "SÄKER?" (röd, 5 s timeout / nollställs vid nytt ritstreck), andra
   hållningen (1 s) tömmer duken.
@@ -55,8 +61,10 @@ I `sw.js` finns `const VERSION = 'vNN'` och `CACHE = 'rita-' + VERSION`.
 **Höj `VERSION` (t.ex. v11 -> v12) varje gång du ändrar filer och pushar.**
 Annars hämtar/cachar service workern inte den nya versionen säkert och
 plattan fastnar på gammal kod (offlinear appen = gammal cache sitter kvar).
-När en ny SW installerar medan appen är öppen görs en automatisk
-`location.reload()` (se slutet av `app.js`).
+Appen letar efter en ny version när man kommer tillbaka till den och var
+10:e minut (`UPPDATERA_VAR`). Den nya versionen laddas först när appen döljs
+eller startskärmen visas (`laddaOmOmNy`), inte mitt i ritandet, och
+teckningen sparas först.
 
 ### Arbetsflöde: alltid commit + push vid ny version
 När du gjort en ändring som ska nå plattan (i regel varje gång du ändrat
