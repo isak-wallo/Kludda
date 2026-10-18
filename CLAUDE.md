@@ -1,4 +1,4 @@
-# Kludd — rita-app för barn
+# Kludda — rita-app för barn
 
 En enkel ritapp (PWA) byggd för att installeras på en gammal Android-platta
 och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
@@ -47,7 +47,8 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
 - **Även på https://kludda.keiws.com** (Cloudflare, `wrangler.jsonc`). Den
   byts bara när Isak ber om det: `python verktyg/slapp.py --skarpt` publicerar
   appens filer (ASSETS i `sw.js`) från `origin/main` med wrangler och taggar
-  committen `slapp-N`. `python verktyg/slapp.py` visar vad som är släppt.
+  committen `slapp-N`. Den skarpa sidan har egna versionsnummer: i den
+  släppta `sw.js` blir `VERSION` släppnumret (v1, v2 …), oberoende av Pages. `python verktyg/slapp.py` visar vad som är släppt.
 
 ### VIKTIGT vid uppdatering: bumpa SW-versionen
 I `sw.js` finns `const VERSION = 'vNN'` och `CACHE = 'rita-' + VERSION`.

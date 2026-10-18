@@ -1,4 +1,4 @@
-# Kludd
+# Kludda
 
 En enkel fullskärms-ritapp för barn, byggd som en PWA och avsedd att
 installeras på en gammal Android-platta och användas offline.
