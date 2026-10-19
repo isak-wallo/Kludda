@@ -67,11 +67,16 @@ installerar den med adb (USB). `versionCode` = numret i `VERSION` i `sw.js`,
 så en ny APK installeras över den gamla (teckningen finns kvar).
 **Bygg en ny APK vid varje ny version** (efter push), så att APK:n alltid
 finns i samma version som Pages; ta bort den förra APK:n i `apk\`.
-- I appen (`ANDROID_APP` = `window.Capacitor` i `app.js`): ingen startskärm
-  och ingen service worker; filerna ligger i APK:n, så appen uppdateras bara
-  med en ny APK.
-- `MainActivity.java`: systemfälten dolda (glider fram vid svep, döljs igen
-  vid fokus), bakåt gör ingenting. `AndroidManifest.xml`: `sensorLandscape`.
+- I appen (`ANDROID_APP` = `window.Capacitor` i `app.js`): ingen startskärm,
+  ingen service worker och ingen dö-yta (`DEAD_ZONE`); filerna ligger i APK:n,
+  så appen uppdateras bara med en ny APK.
+- `MainActivity.java`: systemfälten dolda (glider fram ovanpå vid svep, döljs
+  igen vid fokus; även `SystemBars.hidden` i `capacitor.config.json`). Syns
+  fälten ändå får fönstret padding efter dem (egen insets-lyssnare i stället
+  för Capacitors SystemBars), så ritytan krymper i stället för att hamna under.
+  Bakåt gör ingenting. Appen fäster sig själv (`startLockTask`, Android frågar)
+  en gång varje gång den kommer fram; lossas med bakåt + översikt.
+  `AndroidManifest.xml`: `sensorLandscape`.
 - Ikonerna i `android/app/src/main/res/mipmap-*` är gjorda från `icon-512.png`.
 - Signeringsnyckeln (gemensam för keIWs appar) ligger utanför repot i
   `C:\Dropbox\Isak\Program\AI\Claude\android-nycklar` (sökvägen i

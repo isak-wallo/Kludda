@@ -256,7 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // skärmlåsning/pinning där hela fönstret förskjuts). I immersive
             // fullscreen är den dynamiska delen 0.
             const isPhone = lockedH < PHONE_LANDSCAPE_MAX_H;
-            let staticPad = IS_ANDROID ? DEAD_ZONE : 0;
+            // Android-appen: systemfälten är dolda och ritytan krymper själv
+            // om de syns (MainActivity.java), så ingen remsa.
+            let staticPad = IS_ANDROID && !ANDROID_APP ? DEAD_ZONE : 0;
             let dynPad = 0;
             if (window.visualViewport) {
                 const dyn = isPhone
