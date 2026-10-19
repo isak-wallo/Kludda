@@ -56,9 +56,12 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
 
 ### Android-appen (APK, Capacitor)
 Kludda finns också som riktig Android-app som installeras från en APK-fil
-(inte Google Play). `python verktyg/bygg_apk.py` kopierar appens filer (ASSETS
-i `sw.js`, inte `sw.js`) från arbetskopian till `app-webb/`, kör
-`npx cap sync android` och bygger `android/` med Gradle. APK:n hamnar i
+(inte Google Play). `python verktyg/bygg_apk.py` bygger i en kopia utanför
+Dropbox (`%LOCALAPPDATA%\keiws-bygg\kludda`, Dropbox låser och gör om filerna
+till molnfiler mitt i bygget): dit kopieras `android/`, `package.json` och
+appens filer (ASSETS i `sw.js`, inte `sw.js`) från arbetskopian, och där körs
+`npm ci`, `npx cap sync android` och Gradle. Kör aldrig `npx cap` eller Gradle
+i repot. APK:n hamnar i
 `C:\Dropbox\Isak\Program\AI\Claude\apk\Kludda-vNN.apk`; `--installera`
 installerar den med adb (USB). `versionCode` = numret i `VERSION` i `sw.js`,
 så en ny APK installeras över den gamla (teckningen finns kvar).
@@ -74,8 +77,7 @@ finns i samma version som Pages; ta bort den förra APK:n i `apk\`.
   `C:\Dropbox\Isak\Program\AI\Claude\android-nycklar` (sökvägen i
   `keiwsNycklar` i `~/.gradle/gradle.properties`). Lägg den aldrig i repot.
 - Kräver Node, Java 21 och Android SDK (kommandoradsverktygen i
-  `%LOCALAPPDATA%\Android\Sdk`). `node_modules/`, `app-webb/` och Androids
-  byggmappar är Dropbox-ignorerade.
+  `%LOCALAPPDATA%\Android\Sdk`).
 
 ### VIKTIGT vid uppdatering: bumpa SW-versionen
 I `sw.js` finns `const VERSION = 'vNN'` och `CACHE = 'rita-' + VERSION`.
