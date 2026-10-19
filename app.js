@@ -46,17 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
     pCtx.lineWidth = lineWidth;
     pCtx.strokeStyle = currentColor;
 
-    let clearState = 0;
-    let clearTimer = null;
     const MAX_UNDO = 10;   // Hur många steg bakåt man kan ångra
     const undoStack = [];
     let viewRect = { left: 0, top: 0 };
 
     // --- Håll-in-logik för systemknappar (ÅNGRA / RENSA) ---
     // Båda kräver att man håller fingret intryckt i HOLD_MS (ca 1 s) för att
-    // aktiveras. RENSA har kvar sin tvåstegsbekräftelse: första hållningen
-    // visar SÄKER?, andra hållningen tömmer duken. En kort tryckning gör inget
-    // — det förhindrar att ett barn råkar rensa/ångra vid missögon.
+    // aktiveras. En kort tryckning gör inget — det förhindrar att ett barn
+    // råkar rensa/ångra vid missögon (och en rensning går att ångra).
     const HOLD_MS = 1000;
     // Synka håll-animationens längd i CSS med HOLD_MS (--hold-ms används
     // av .sys-btn.holding i style.css).
@@ -93,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function knappText(btn) {
-        return btn === undoBtn ? 'ÅNGRA' : (clearState === 1 ? 'SÄKER?' : 'RENSA');
+        return btn === undoBtn ? 'ÅNGRA' : 'RENSA';
     }
 
     function visaHallTips(target) {
@@ -422,7 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
         strokeExtent = 0;
         pendingPoints.length = 0;
         isDrawing = true;
-        resetClearButton();
     }
 
     // Buffrar punkten och schemalägger rendering nästa frame. Flyttningar
@@ -510,38 +506,15 @@ document.addEventListener('DOMContentLoaded', () => {
         pCtx.strokeStyle = currentColor;
         colorBoxes.forEach(box => box.classList.remove('selected'));
         element.classList.add('selected');
-        resetClearButton();
     }
 
-    // RENSA — tvåstegs med hållning: första hållningen (1 s) visar "SÄKER?"
-    // (röd, 5 s timeout / nollställs vid nytt ritstreck), andra hållningen
-    // (1 s) tömmer duken.
+    // RENSA — en hållning (1 s) tömmer duken. Det går att ångra.
     function handleClear() {
-        if (clearState === 0) {
-            clearState = 1;
-            clearBtn.textContent = 'SÄKER?';
-            clearBtn.classList.add('confirm');
-            clearTimer = setTimeout(resetClearButton, 5000);
-        } else {
-            pushUndo();
-            pCtx.fillStyle = '#ffffff';
-            pCtx.fillRect(0, 0, paper.width, paper.height);
-            render();
-            resetClearButton();
-            sparaSnart();
-        }
-    }
-
-    function resetClearButton() {
-        clearState = 0;
-        if (clearTimer) {
-            clearTimeout(clearTimer);
-            clearTimer = null;
-        }
-        if (clearBtn) {
-            clearBtn.textContent = 'RENSA';
-            clearBtn.classList.remove('confirm', 'tips');
-        }
+        pushUndo();
+        pCtx.fillStyle = '#ffffff';
+        pCtx.fillRect(0, 0, paper.width, paper.height);
+        render();
+        sparaSnart();
     }
 
     function pushUndo() {
@@ -557,7 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = undoStack.pop();
         pCtx.putImageData(img, 0, 0);
         render();
-        resetClearButton();
         updateUndoState();
         sparaSnart();
     }
@@ -593,7 +565,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // tillbaka in i fullscreen. Ritningen på papperet påverkas inte.
     function showStartOverlay() {
         startOverlay.style.display = 'flex';
-        resetClearButton();
         laddaOmOmNy();
     }
 
@@ -615,8 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Systemknappar (undo, clear) — håll in HOLD_MS (1 s) för att aktivera.
-    // RENSA har tvåstegs: första hållningen visar SÄKER?, andra hållningen
-    // tömmer duken. Touchstart på knapparna stopPropagates så de inte startar
+    // Touchstart på knapparna stopPropagates så de inte startar
     // ett streck; click finns kvar för mus/test på dator (håll via mousedown).
     function holdStart(target) {
         const btn = (target === 'undo') ? undoBtn : clearBtn;
@@ -807,7 +777,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('orientationchange', debouncedLayout);
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) return;
-        resetClearButton();
         flushPendingStrokes();
         sparaNu();
         laddaOmOmNy();

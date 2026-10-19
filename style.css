@@ -222,13 +222,3 @@ body {
 }
 
 #undo-btn:disabled { opacity: 0.45; cursor: default; }
-#clear-btn.confirm {
-    background-color: #f2b8b0;
-    color: #ffffff;
-    animation: pulse-confirm 0.3s ease;
-}
-@keyframes pulse-confirm {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.08); }
-    100% { transform: scale(1); }
-}

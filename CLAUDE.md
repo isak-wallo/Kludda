@@ -11,8 +11,7 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
 - **Lugn stil som syskonen** Poppa och Färga: färgerna är samma mjuka toner
   som Poppas ballonger, bara lite djupare så strecken syns på vitt papper
   (rena pasteller blir för bleka som streck). Panelen är ljusblå
-  (`#dcecf8`) med vita knappar och grå text som i Färga; SÄKER? är mjukt
-  rosa. Färgerna står bara i `data-color` i `index.html` — `app.js` färgar
+  (`#dcecf8`) med vita knappar och grå text som i Färga. Färgerna står bara i `data-color` i `index.html` — `app.js` färgar
   rutorna och tar startfärgen från rutan med klassen `selected`.
 - **ÅNGRA** — ångra upp till 10 streck (`MAX_UNDO`). Håll in knappen i 1 s
   (`HOLD_MS`) för att aktivera; ett kort tryck gör inget.
@@ -22,9 +21,8 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
   varje ändring (`sparaSnart`, med `toBlob` så strecken inte hackar) och direkt
   när appen döljs (`sparaNu`), och läses in vid start (`lasIn`). Den finns kvar
   när Android stänger appen eller en ny version laddas; bara RENSA tömmer den.
-- **RENSA** — tvåstegs bekräftelse med hållning: första hållningen (1 s)
-  visar "SÄKER?" (röd, 5 s timeout / nollställs vid nytt ritstreck), andra
-  hållningen (1 s) tömmer duken.
+- **RENSA** — håll in knappen i 1 s så töms duken. Ingen extra bekräftelse
+  (SÄKER? togs bort i v35), eftersom rensningen går att ångra.
 - Låser orientering till **landskap**, går i fullscreen och "naglar fast"
   layouten så systemfälten (statusfält) inte kan trycka undan ritytan.
   Orienteringslåset biter bara i fullscreen/installerad app — i vanligt
@@ -64,6 +62,8 @@ i `sw.js`, inte `sw.js`) från arbetskopian till `app-webb/`, kör
 `C:\Dropbox\Isak\Program\AI\Claude\apk\Kludda-vNN.apk`; `--installera`
 installerar den med adb (USB). `versionCode` = numret i `VERSION` i `sw.js`,
 så en ny APK installeras över den gamla (teckningen finns kvar).
+**Bygg en ny APK vid varje ny version** (efter push), så att APK:n alltid
+finns i samma version som Pages; ta bort den förra APK:n i `apk\`.
 - I appen (`ANDROID_APP` = `window.Capacitor` i `app.js`): ingen startskärm
   och ingen service worker; filerna ligger i APK:n, så appen uppdateras bara
   med en ny APK.
@@ -153,8 +153,6 @@ gäller: commit-meddelanden på svenska, signera med
   det hållande fingret (`holdTouchId`) kan avbryta — ett annat finger som
   lyfts från duken avbryter inte hållningen. Ett
   pågående ritstreck avslutas snyggt innan ångra/rensa körs (multitouch).
-  RENSA behåller sin tvåstegsbekräftelse: första hållningen visar SÄKER?,
-  andra hållningen tömmer duken.
 - **Dö-yta:** `applyLayout` sätter en permanent svart remsa (`DEAD_ZONE`,
   48 px ≈ en systemknappshöjd) som `padding` på `#app` (som har
   `background-color: #000`). Sidan beror på enhet, skild på skärmhöjd:
