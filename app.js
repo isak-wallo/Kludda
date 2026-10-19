@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const undoBtn = document.getElementById('undo-btn');
     const clearBtn = document.getElementById('clear-btn');
     const app = document.getElementById('app');
+    // Android-appen (Capacitor, verktyg/bygg_apk.py): helskärm, vridning och
+    // bakåt sköts av appen själv, så ingen startskärm och ingen service worker.
+    const ANDROID_APP = !!window.Capacitor;
+    if (ANDROID_APP) startOverlay.style.display = 'none';
 
     pCtx.fillStyle = '#ffffff';
     pCtx.fillRect(0, 0, paper.width, paper.height);
@@ -821,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // appen startas, så den letar också när man kommer tillbaka till appen
     // och var UPPDATERA_VAR medan den är öppen (ny version: laddaOmOmNy).
     const UPPDATERA_VAR = 10 * 60 * 1000;
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && !ANDROID_APP) {
         navigator.serviceWorker.register('sw.js').then(reg => {
             const leta = () => reg.update().catch(() => {});
             document.addEventListener('visibilitychange', () => {

@@ -1,0 +1,8 @@
+{
+  "appId": "com.keiws.kludda",
+  "appName": "Kludda",
+  "webDir": "app-webb",
+  "android": {
+    "backgroundColor": "#000000"
+  }
+}

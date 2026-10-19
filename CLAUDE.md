@@ -56,6 +56,27 @@ och användas av barn. Språk i appen och i koden (kommentarer, knappnamn) är
   committen `slapp-N`. Den skarpa sidan har egna versionsnummer: i den
   släppta `sw.js` blir `VERSION` släppnumret (v1, v2 …), oberoende av Pages. `python verktyg/slapp.py` visar vad som är släppt.
 
+### Android-appen (APK, Capacitor)
+Kludda finns också som riktig Android-app som installeras från en APK-fil
+(inte Google Play). `python verktyg/bygg_apk.py` kopierar appens filer (ASSETS
+i `sw.js`, inte `sw.js`) från arbetskopian till `app-webb/`, kör
+`npx cap sync android` och bygger `android/` med Gradle. APK:n hamnar i
+`C:\Dropbox\Isak\Program\AI\Claude\apk\Kludda-vNN.apk`; `--installera`
+installerar den med adb (USB). `versionCode` = numret i `VERSION` i `sw.js`,
+så en ny APK installeras över den gamla (teckningen finns kvar).
+- I appen (`ANDROID_APP` = `window.Capacitor` i `app.js`): ingen startskärm
+  och ingen service worker; filerna ligger i APK:n, så appen uppdateras bara
+  med en ny APK.
+- `MainActivity.java`: systemfälten dolda (glider fram vid svep, döljs igen
+  vid fokus), bakåt gör ingenting. `AndroidManifest.xml`: `sensorLandscape`.
+- Ikonerna i `android/app/src/main/res/mipmap-*` är gjorda från `icon-512.png`.
+- Signeringsnyckeln (gemensam för keIWs appar) ligger utanför repot i
+  `C:\Dropbox\Isak\Program\AI\Claude\android-nycklar` (sökvägen i
+  `keiwsNycklar` i `~/.gradle/gradle.properties`). Lägg den aldrig i repot.
+- Kräver Node, Java 21 och Android SDK (kommandoradsverktygen i
+  `%LOCALAPPDATA%\Android\Sdk`). `node_modules/`, `app-webb/` och Androids
+  byggmappar är Dropbox-ignorerade.
+
 ### VIKTIGT vid uppdatering: bumpa SW-versionen
 I `sw.js` finns `const VERSION = 'vNN'` och `CACHE = 'rita-' + VERSION`.
 **Höj `VERSION` (t.ex. v11 -> v12) varje gång du ändrar filer och pushar.**
@@ -86,6 +107,7 @@ gäller: commit-meddelanden på svenska, signera med
 | `sw.js` | Service worker — cache-first med tyst bakgrundsuppdatering (stale-while-revalidate). Bumpa `VERSION` vid varje deploy. |
 | `manifest.json` | PWA-manifest (`standalone`, `landscape`, ikoner). |
 | `wrangler.jsonc`, `verktyg/slapp.py` | Publiceringen till kludda.keiws.com (se Hosting). |
+| `android/`, `capacitor.config.json`, `package.json`, `verktyg/bygg_apk.py` | Android-appen (se Hosting). |
 | `icon-192.png`, `icon-512.png` | App-ikoner (vågiga streck i appens färger på ljusblå himmel). |
 
 ## Arkitektur / viktiga detaljer i `app.js`
@@ -179,7 +201,8 @@ gäller: commit-meddelanden på svenska, signera med
 ## Konventioner att behålla
 
 - Svenska i UI och kommentarer.
-- Ingen byggpipeline, inga dependencies — ren vanilla JS/CSS/HTML.
+- Ingen byggpipeline, inga dependencies — ren vanilla JS/CSS/HTML (npm-paketen
+  i `package.json` är bara till Android-appen).
 - Bumpa `VERSION` i `sw.js` vid varje ändring som ska nå plattan.
 - Låt renderingen vara batchad/`requestAnimationFrame`-styrd (prestanda på
   gammal Android).

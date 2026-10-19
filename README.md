@@ -15,6 +15,14 @@ en hand på skärmen medan det ritar med den andra.
 3. Starta från hemskärmen — då körs appen i standalone-läge och fungerar
    offline tack vare service workern.
 
+## Som Android-app (APK)
+
+Kludda kan också byggas som en riktig Android-app med Capacitor:
+`python verktyg/bygg_apk.py` (kräver Node, Java 21 och Android SDK; första
+gången `npm install`). Appen ligger då i helskärm, är låst i landskap och
+bakåtknappen gör ingenting. Signeringsnyckeln ligger utanför repot och anges
+med `keiwsNycklar` i `~/.gradle/gradle.properties`.
+
 ## Köra lokalt
 
 Inget byggsteg och inga beroenden. Bara öppna `index.html` i en webbläsare,
