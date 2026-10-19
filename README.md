@@ -19,7 +19,8 @@ en hand på skärmen medan det ritar med den andra.
 
 Kludda kan också byggas som en riktig Android-app med Capacitor:
 `python verktyg/bygg_apk.py` (kräver Node, Java 21 och Android SDK; bygget
-görs i en kopia utanför Dropbox). Appen ligger då i helskärm, är låst i landskap och
+görs i en kopia utanför Dropbox). Appen ligger då i helskärm över hela
+skärmen, är låst i landskap, fäster sig själv (skärmfästning) och
 bakåtknappen gör ingenting. Signeringsnyckeln ligger utanför repot och anges
 med `keiwsNycklar` i `~/.gradle/gradle.properties`.
 
