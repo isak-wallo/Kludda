@@ -62,7 +62,7 @@ till molnfiler mitt i bygget): dit kopieras `android/`, `package.json` och
 appens filer (ASSETS i `sw.js`, inte `sw.js`) från arbetskopian, och där körs
 `npm ci`, `npx cap sync android` och Gradle. Kör aldrig `npx cap` eller Gradle
 i repot. APK:n hamnar i
-`C:\Dropbox\Isak\Program\AI\Claude\apk\Kludda-vNN.apk`; `--installera`
+`C:\Dropbox\Isak\Program\AI\Claude\keIWs\apk\Kludda-vNN.apk`; `--installera`
 installerar den med adb (USB). `versionCode` = numret i `VERSION` i `sw.js`,
 så en ny APK installeras över den gamla (teckningen finns kvar).
 **Bygg en ny APK vid varje ny version** (efter push), så att APK:n alltid
@@ -79,7 +79,7 @@ finns i samma version som Pages; ta bort den förra APK:n i `apk\`.
   `AndroidManifest.xml`: `sensorLandscape`.
 - Ikonerna i `android/app/src/main/res/mipmap-*` är gjorda från `icon-512.png`.
 - Signeringsnyckeln (gemensam för keIWs appar) ligger utanför repot i
-  `C:\Dropbox\Isak\Program\AI\Claude\android-nycklar` (sökvägen i
+  `C:\Dropbox\Isak\Program\AI\Claude\keIWs\android-nycklar` (sökvägen i
   `keiwsNycklar` i `~/.gradle/gradle.properties`). Lägg den aldrig i repot.
 - Kräver Node, Java 21 och Android SDK (kommandoradsverktygen i
   `%LOCALAPPDATA%\Android\Sdk`).

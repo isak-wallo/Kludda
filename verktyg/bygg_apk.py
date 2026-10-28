@@ -7,7 +7,7 @@ och appens filer (ASSETS i sw.js, utom sw.js) från arbetskopian. Sedan körs
 `npx cap sync android` och Gradle, som signerar med keIWs nyckel (keiwsNycklar
 i ~/.gradle/gradle.properties, utanför repot).
 
-APK:n hamnar i Claude\\apk\\Kludda-vNN.apk (i Dropbox, så att den kan öppnas på
+APK:n hamnar i Claude\\keIWs\\apk\\Kludda-vNN.apk (i Dropbox, så att den kan öppnas på
 plattan); den förra tas bort. versionCode är numret i VERSION i sw.js
 (v33 -> 33), så en ny APK installeras över den gamla och teckningen finns kvar.
 
